@@ -1,0 +1,176 @@
+---
+title: "CS 4354 HW 2"
+output: pdf_document
+date: "2025-02-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+```
+
+## Question 1
+
+Step 1: Take sample of 10 coin tosses.
+```{r}
+set.seed(1234)
+coins <- sample(c('H', 'T'), 10, replace = TRUE, prob = c(0.5, 0.5))
+```
+
+Step 2: Count heads
+```{r}
+cointable <- table(coins)
+heads <- unname(cointable[1])
+heads
+```
+
+Step 3: Repeat 10000 times
+```{r}
+set.seed(1234)
+heads = NULL
+seeds = sample.int(1000, 10000, replace = TRUE)
+for  (i in 1:10000) {
+  set.seed(seeds[i])
+  coins <- sample(c('H', 'T'), 10, replace = TRUE, prob = c(0.5, 0.5))
+  cointable <- table(coins)
+  if (length(cointable) < 2)
+    if (names(cointable) == "H")
+      heads[i] <- 0
+    else
+      heads[i] <- 10
+  else
+    heads[i] <- unname(cointable[1])
+}
+
+table(heads)
+```
+
+Finally, find percentage.
+```{r}
+unname(table(heads)[8]) / 10000
+```
+
+With our sample, we get a 12.58% chance of getting 7 heads in 10 coin flips.
+
+\newpage
+
+## Question 2
+
+First, create distributions for X1, X2, and X3.
+```{r}
+set.seed(123)
+x1 <- rnorm(10000)
+set.seed(456)
+x2 <- rnorm(10000)
+set.seed(789)
+x3 <- rnorm(10000)
+```
+
+Create x and create density plot.
+```{r}
+x <- 2*(x1*x2 - x2*x3 - x1*x3)
+plot(density(x))
+```
+
+\newpage
+
+## Question 3
+
+Create distributions for U1, U2, and U3.
+```{r}
+set.seed(123)
+u1 <- rchisq(10000, 1)
+set.seed(456)
+u2 <- rchisq(10000, 1)
+set.seed(789)
+u3 <- rchisq(10000, 1)
+```
+
+Create u with density plot
+```{r}
+u <- 2*u1 - u2 - u3
+plot(density(u))
+```
+
+\newpage
+
+## Question 4
+
+```{r}
+pvals <- NULL
+for (i in 1:10000) {
+  set.seed(seeds[i])
+  x1 = rnorm(10000)
+  x2 = rnorm(10000)
+  x3 = rnorm(10000)
+  u1 = rchisq(10000, 1)
+  u2 = rchisq(10000, 1)
+  u3 = rchisq(10000, 1)
+  
+  x <- 2*(x1*x2 - x2*x3 - x1*x3)
+  u <- 2*u1 - u2 - u3
+  
+  pvals[i] <- ks.test(x, u, alternative = 't')$p
+}
+head(pvals)
+```
+
+Now count up all p-values above 0.05
+```{r}
+pcount = NULL
+for (i in 1:10000) {
+  if (pvals[i] > 0.05)
+    pcount[i] <- 1
+  else
+    pcount[i] <- 0
+}
+
+# Output percent of pvals above 0.05
+sum(pcount) / 10000
+```
+
+We see that 96.29% of the p-values are above 0.05, which shows that distributions are the same.
+
+\newpage
+
+## Question 5
+
+Step 1: Create distributions
+```{r}
+set.seed(1234)
+xcenter = rnorm(10)
+xskew = rnorm(10, mean = 1, sd = 1)
+```
+
+Step 2: Two-sample test
+```{r}
+t.test(xcenter, xskew, alternative = 't')
+```
+
+Step 3: Repeat 10000 times and find p-values under 0.05
+```{r}
+for (i in 1:10000) {
+  set.seed(seeds[i])
+  xcenter = rnorm(10)
+  xskew = rnorm(10, mean = 1, sd = 1)
+  pvals[i] = t.test(xcenter, xskew, alternative = 't')$p.value
+  if (pvals[i] < 0.05)
+    pcount[i] <- 1
+  else
+    pcount[i] <- 0
+}
+
+sum(pcount) / 10000
+```
+
+We see approximately 55.59 percent of out samples have p-value below 0.05. This shows a high likelihood that the distributions are dissimilar.
+
+\newpage
+
+## Question 6
+
+An increase in sample size typically leads to an increase in power, as larger samples sizes will more accurately portray the difference in distributions with less noise.
+
+A lower, more specific alpha value will typically lead to lower power, as it will be harder to reject samples if the alpha value is too low.
+
+An increase in mean for a specific distribution will push the distributions farther away from each other, leading to a higher power.
