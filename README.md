@@ -1,2 +1,2 @@
 # NumStat-HW2
-R Markdown document homework for Numerical and Statistical Methods - HW2
+A homework assignment for Numerical and Statistical Computing involving implementing basic statistical processes in R, including random sampling, density plotting, and hypothesis testing.
